@@ -2,6 +2,7 @@ package com.duckspot.makesite;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,6 +45,10 @@ public class Translate implements ChangeListener {
         this.watch = watch;
     }
     
+    public Translate(Path dstDir, Path srcDir, boolean watch) {
+        this(dstDir.toFile(), srcDir.toFile(), watch);
+    }
+    
     private void innerTranslate(File dstDir, File srcDir) throws IOException {
         for (File srcFile: srcDir.listFiles()) {
             if (srcFile.isDirectory()) {                
@@ -65,6 +70,7 @@ public class Translate implements ChangeListener {
         }
         innerTranslate(dstDir, srcDir);
         if (w != null) {
+            System.out.println("watching for file changes...");
             w.watch();
         }
     }
