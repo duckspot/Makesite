@@ -3,50 +3,27 @@ package com.duckspot.makesite;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TranslateDirectory implements ChangeListener {
-    
-    private static Translator[] translators = {};
-    
-    public static void setTranslators(Translator[] translators) {
-        TranslateDirectory.translators = translators;
-    }
     
     public static void translateFile(File dstDir, File srcFile) 
             throws IOException
     {
-        long srcModified = srcFile.lastModified();
-        for (Translator t: translators) {
-            if (t.matches(srcFile)) {
-                File dstFile = t.getDstFile(dstDir, srcFile);
-                if (dstFile.lastModified() < srcModified) {
-                    System.out.println("translate " + 
-                            srcFile + " -> " + dstFile);
-                    try {
-                        t.translate(dstFile, srcFile);
-                    } catch (IOException ex) {
-                        Logger.getLogger(App.class.getName())
-                                .log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
+        TranslationSeries ts = 
+                new TranslationSeries(dstDir.toPath(), srcFile.toPath());
+        if (ts.needsTranslation()) {
+            ts.translate();
         }
     }
-        
+    
     private final File dstDir;
     private final File srcDir;    
     private final boolean watch;
     
-    public TranslateDirectory(File dstDir, File srcDir, boolean watch) {
-        this.dstDir = dstDir;
-        this.srcDir = srcDir;
-        this.watch = watch;
-    }
-    
-    public TranslateDirectory(Path dstDir, Path srcDir, boolean watch) {
-        this(dstDir.toFile(), srcDir.toFile(), watch);
+    TranslateDirectory(Path dstDir, Path srcDir, boolean watch) {
+        this.dstDir = dstDir.toFile();
+        this.srcDir = srcDir.toFile();
+        this.watch = watch;    
     }
     
     private void innerTranslate(File dstDir, File srcDir) throws IOException {
@@ -62,9 +39,9 @@ public class TranslateDirectory implements ChangeListener {
     }
     
     void translate() throws IOException {
-        Watch w = null;
+        WatchDirectory w = null;
         if (watch) {
-            w = new Watch(srcDir);
+            w = new WatchDirectory(srcDir);
             w.addChangeListener(this);
             w.setup();
         }
