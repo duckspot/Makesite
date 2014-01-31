@@ -59,11 +59,12 @@ public class App
         }
         
         // setup set of translators
-        Translate.setTranslators(new Translator[] {
-            new MarkdownTranslator()
-        });
-        
+        TranslatorRegistry tr = new TranslatorRegistry();
+        Translator t = new MarkdownTranslator();
+        tr.addTranslator("md",t);
+        tr.addTranslator("markdown",t);
+        TranslationSeries.setRegistry(tr);        
         // perform translation & watch as appropriate
-        new Translate(dstDir, srcDir, watch).translate();
+        new TranslateDirectory(dstDir, srcDir, watch).translate();
     }
 }
